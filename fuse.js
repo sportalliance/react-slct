@@ -1,27 +1,31 @@
-const {
-    FuseBox,
-    QuantumPlugin
-} = require("fuse-box");
+const { fusebox } = require('fuse-box');
 
-const fuse = FuseBox.init({
-    homeDir: 'src',
-    target: 'browser@es2015',
-    sourceMaps: true,
-    output: "dist/$name.js"
+const fuse = fusebox({
+    entry: 'src/index.tsx',
+    target: 'browser',
+    sourceMap: true
 });
 
-const fuse2 = FuseBox.init({
-    homeDir: 'src',
-    target: 'browser@es2015',
-    sourceMaps: true,
-    output: "dist/$name.js",
-    plugins: [QuantumPlugin({
-        uglify: true,
-        treeshake: true
-    })]
-})
+async function bundle() {
+    await fuse.runProd({
+        bundles: {
+            app: 'react-slct.js',
+            distRoot: 'dist'
+        },
+        manifest: false
+    });
 
-fuse.bundle("react-slct").instructions(" > [index.tsx]")
-fuse2.bundle("react-slct.min").instructions(" > [index.tsx]")
-fuse.run();
-fuse2.run();
+    await fuse.runProd({
+        bundles: {
+            app: 'react-slct.min.js',
+            distRoot: 'dist'
+        },
+        manifest: false,
+        uglify: true
+    });
+}
+
+bundle().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+});
